@@ -1,1 +1,366 @@
+/*---------------сброс стилей от Eric Mayer---------------*/
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+margin: 0;
+padding: 0;
+border: 0;
+font-size: 100%;
+font: inherit;
+vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+display: block;
+}
+body {
+line-height: 1;
+}
+ol, ul {
+list-style: none;
+}
+blockquote, q {
+quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+content: '';
+content: none;
+}
+table {
+border-collapse: collapse;
+border-spacing: 0;
+}
+/*---------------конец сброса стилей---------------*/
+/*---------общие-----------------------*/
+* {
+  box-sizing: border-box;
+}
+body {
+  background: #555;
+}
+.wrapper {
+  width: 95%;
+  max-width: 1040px;
+  margin: 100px auto;
+  background: #bbb;
+}
+.trending__header, .search-results__header {
+  font-family: 'Calibri', sans-serif;
+  font-size: 2em;
+  background: #555;
+  color: #fff;
+  margin-bottom: 0.5em;
+  padding: 0.25em;
+}
+/*---------------header---------------*/
+.header {
+  padding: 4em 1.3333em 1.3333em 1.3333em;
+  margin-bottom: 2em;
+  height: 8.45833em;
+}
+.header-wrap {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+}
+.header__logo-link {
+  display: block;
+  text-decoration: none;
+  width: 13.82%; 
+  height: 100%;
+  background: url(../img/logo.png) no-repeat;
+  background-size: cover;
+  
+}
+/* .header__logo-img {
+  width: 100%;
+  height: 100%;
+} */
 
+/*---------------форма поиска---------------*/
+.search {
+  width: 76.92307%;
+  height: 100%;
+}
+.search__form {
+  font-size: 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  height: 100%;
+}
+.search__query-field {
+  width: 86.96610%;
+  border: none;
+  padding: 0 1em;
+  background: #ddd;
+}
+.search__button {
+  width: 13.0339%;
+  border: none;
+  background: #555;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+.search-results__header {
+  display: none;
+}
+.topWindow {
+  position: fixed;
+  top: 0.3125em;
+  left: 0;
+  right: 0;
+  margin: auto;
+  z-index: 1000;
+  height: 3.125em;
+  
+  display: flex;
+  justify-content: flex-end;
+}
+.topWindow .search__form {
+  border: 2px solid #fff;
+}
+.topWindow .search__button {
+  width: 9.997%; /*для того, чтобы не менялась ширина при прилипании формы к верху страницы*/
+}
+.topWindow .search__query-field {
+  width: 90.003%;
+}
+
+/*---------------main---------------*/
+main {
+  padding: 1.25em;
+}
+/*---------------trending---------------*/
+.trending {
+  margin-bottom: 3.125em;
+}
+.trending__slider-window {
+  overflow: hidden;
+  margin: 0 auto;
+  /* width: 100%; */
+  height: 9.375em;
+  position: relative;
+}
+.trending__slides {
+  display: flex;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  transition: left 0.7s;
+}
+.trending__slide {
+  height: 9.375em;
+  cursor: pointer;
+}
+.trending__slide:not(:last-child) {
+  margin-right: 0.625em;
+  
+}
+.trending__btn {
+  font-size: 1.875em;
+  color: #bbb;
+  position: absolute;
+  width: 2.33333em;
+  height: 5em;
+  line-height: 5em;
+  top: 0;
+  z-index: 100;
+  text-align: center;
+  transition: opacity 0.7s;
+}
+.trending__btn:hover {
+  cursor: pointer;
+}
+.trending__btn:hover .trending__arrow {
+  border-color: #fff;
+}
+.trending__btn--forward {
+  right: 0;
+  background: linear-gradient(to left, #bbb 0%, transparent 100%);
+/*   opacity: 1; */
+}
+.trending__btn--back {
+  left: 0;
+  background: linear-gradient(to right, #bbb 0%, transparent 100%);
+  display: none;
+  opacity: 0;
+}
+.trending__arrow {
+  position: absolute;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  width: 1em;
+  height: 1em;
+  cursor: pointer;
+  transform: rotate(45deg);
+}
+.trending__arrow--forward {
+  border-top: 3px solid #555;
+  border-right: 3px solid #555;
+}
+.trending__arrow--back {
+  border-left: 3px solid #555;
+  border-bottom: 3px solid #555;
+}
+
+/*---------------результаты поиска---------------*/
+
+.search-results__container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.search-results__col {
+  width: 19.2%; /*192/1000*/
+}
+.search-results__item {
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.625em;
+  cursor: pointer;
+}
+.search-results__show-more {
+  display: none;
+  background: #555;
+  border: none;
+  color: #fff;
+  padding: 0.3125em;
+  cursor: pointer;
+}
+
+/*---------------увеличение картинки при клике---------------*/
+
+.full-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 2000;
+  display: none;
+}
+.full-screen__popup {
+  position: absolute;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border: 1px solid #fff;
+  padding: 0.625em;
+  box-sizing: content-box;
+  /* transition: height 0.7s; */
+  /* overflow: hidden; */
+}
+.full-screen__title {
+  color: #fff;
+  height: 3.125em;
+  overflow: auto;
+  font-weight: bold;
+  font-family: Calibri;
+}
+.full-screen__close-btn {
+  position: absolute;
+  width: 1.5625em;
+  height: 1.5625em;
+  line-height: 1.5625em;
+  text-align: center;
+  color: #fff;
+  font-weight: bold;
+  font-family: Calibri;
+  font-size: 1.5625em;
+  top: -1.5625em;
+  right: -1.5625em;
+  cursor: pointer;
+  /* z-index: 1000; */
+}
+
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .search-results__col--5 {
+    display: none;
+  }
+  .search-results__col {
+    width: 24%; 
+  }
+}
+
+@media (max-width: 767px) {
+  .search-results__col--5, .search-results__col--4 {
+    display: none;
+  }
+  .search-results__col {
+    width: 32.5%; 
+  }
+  .search__button {
+    width: 20%;
+  }
+  .topWindow .search__button {
+    width: 15.331%;
+  }
+  
+}
+
+@media (max-width: 480px) {
+  .header {
+    height: 14.2878em;
+    padding: 1.3333em;
+  }
+  .header-wrap {
+    display: block;
+  }
+  .header__logo-link {
+    width: 100%;
+    height: 40%;
+    background: url(../img/logo1.png) no-repeat;
+    background-size: contain;
+  }
+  .search {
+    width: 100%;
+    height: 60%;
+  }
+  .search__form {
+    display: block;
+  }
+  .search__query-field, .search__button {
+    width: 100%;
+    height: 50%
+  }
+  .topWindow {
+    height: 6.24em;
+  }
+  .topWindow .search__form {
+    display: block;
+  }
+  .topWindow .search__query-field, .topWindow .search__button {
+    width: 100%;
+    height: 50%
+  }
+   .search-results__col--3 {
+    display: none;
+  }
+  .search-results__col {
+    width: 49%; 
+  }
+}
