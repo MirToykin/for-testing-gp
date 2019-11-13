@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
   <link rel="stylesheet" href="css/style.css">
   <title>Giphy API</title>
 </head>
@@ -10,11 +11,11 @@
     <header class='header'>
       <div class="header-wrap">
         <a href="https://developers.giphy.com" class="header__logo-link" target="_blank">
-          <img src='img/logo.png' alt='logo' class="header__logo-img">
+<!--           <img src='img/logo.png' alt='logo' class="header__logo-img"> -->
         </a>
         <div class="search">
           <form class='search__form'>
-            <input type="text" class='search__query-field'>
+            <input type="text" class='search__query-field' placeholder='Введите запрос'>
             <button class="search__button">Поиск</button>
           </form>
         </div>
@@ -37,7 +38,13 @@
       </div>
       <div class="search-results">
         <h2 class="search-results__header"></h2>
-        <div class="search-results__container"></div>
+        <div class="search-results__container">
+          <div class="search-results__col search-results__col--1"></div>
+          <div class="search-results__col search-results__col--2"></div>
+          <div class="search-results__col search-results__col--3"></div>
+          <div class="search-results__col search-results__col--4"></div>
+          <div class="search-results__col search-results__col--5"></div>
+        </div>
         <button class="search-results__show-more">Показать больше</button>
       </div>
     </main>
