@@ -1,5 +1,23 @@
 ﻿let apiKey = 'xttvZ1Z1SnbXsD7xJB7kWsX7oTqeqZWY';
 
+//___________________________Вспомогательные функции____________________________
+function getColIndex(cols) {
+  for (let j = 0; j < cols.length - 1; j++) {
+    if (cols[j].children.length > cols[j + 1].children.length && getComputedStyle(cols[j + 1]).display != 'none') return j + 1;
+  }
+  return 0;
+}
+        
+function insertImages(cols, img) {
+  if (currentCol == cols.length) currentCol = 0;
+  
+  if (getComputedStyle(cols[currentCol]).display != 'none') {
+    cols[currentCol].append(img);
+  } else {
+    index--;
+  }
+  currentCol++;
+}
 // ___________________________Карусель с трендовыми gif__________________________
 
 let trendLength = 20;
@@ -12,7 +30,7 @@ let forwardBtn = document.querySelector('.trending__btn--forward'),
     backBtn = document.querySelector('.trending__btn--back');
 
 let trendSliderWidth = document.querySelector('.trending__slider-window').offsetWidth;;
-let visibleSliderWidth = trendSliderWidth;;
+let visibleSliderWidth = trendSliderWidth;
 
 let trendSlidesWidths = [];  // в каждом элементе массива 
 //будет храниться ширина картинки + ее margin
@@ -27,26 +45,38 @@ let forwardOffset = 0,
 
 let trendIndex = 0;
 
+let currentCol,
+    index; // введен для корректного заполнения колонок в блоке трендов и результатах поиска
+
 let btnTransitionTime = parseFloat(getComputedStyle(document.querySelector('.trending__btn')).transitionDuration) * 1000;
 
-
-function showTrendingGifs() {
+function getTrendingGifs() {
+  let screenWidth = document.documentElement.clientWidth,
+      trendingCols = document.querySelectorAll('.trending__col');
+  
   fetch(trendGiphyAPI)
   .then(response => response.json())
   .then(json => {
-    for (let i = 0; i < trendLength; i++) {
+    for (index = 0; index < trendLength; index++) {
       
       let img = document.createElement('img');
-      img.src = json.data[i].images.fixed_height.url;
-      img.setAttribute('data-title', json.data[i].title);
-      img.setAttribute('data-id', json.data[i].id);
+      img.src = json.data[index].images.fixed_height.url;
+      img.setAttribute('data-title', json.data[index].title);
+      img.setAttribute('data-id', json.data[index].id);
       img.className = 'trending__slide';
       
-      trendSlidesContainer.append(img);
-      let coef = json.data[i].images.original.width/json.data[i].images.original.height;
-      trendSlidesWidths.push(coef);
+      if (screenWidth <= 767) {
+        currentCol = getColIndex(trendingCols);
+        insertImages(trendingCols, img);
+      } else {
+        trendSlidesContainer.append(img);
+        let coef = json.data[index].images.original.width/json.data[index].images.original.height;
+        trendSlidesWidths.push(coef);
+      }
       
     }
+    
+    setTrendingMobileMarginBottom();
     
     trendSlidesWidths = trendSlidesWidths.map((item => item * slideHeight + slideMarginRight));
     
@@ -167,7 +197,17 @@ function isLastScroll(index, iterable, width) {
 function scroll(offset) {
   trendSlidesContainer.style.left = -offset + 'px';
 }
-showTrendingGifs();
+function setTrendingMobileMarginBottom() {
+  if (document.documentElement.clientWidth <= 480) {
+    let trends = document.querySelectorAll('.trending__slide');
+    
+    for (let i = 0; i < trends.length; i++) {
+      trends[i].style.marginBottom = document.documentElement.clientWidth * 0.005 + 'px';
+    }
+  }
+}
+getTrendingGifs();
+window.addEventListener('resize', setTrendingMobileMarginBottom);
 
 // ___________________________форма поиска и поисковая выдача__________________________
 
@@ -190,6 +230,8 @@ let searchForm = document.querySelector('.search__form'),
     searchResultCol3 = document.querySelector('.search-results__col--3'),
     searchResultCol4 = document.querySelector('.search-results__col--4'),
     searchResultCol5 = document.querySelector('.search-results__col--5');
+
+let currentColSearch = 0;
 
 function showSearchResults(event) {
   event.preventDefault();
@@ -221,9 +263,9 @@ function requestGifs(queryString, stringOffset, target) {
       
       if (i == 0 && stringOffset == '') {
 
-        for (let i = 0; i < searchResultCols.length; i++) {
-          while (searchResultCols[i].firstChild) {
-            searchResultCols[i].removeChild(searchResultCols[i].firstChild);
+        for (let j = 0; j < searchResultCols.length; j++) {
+          while (searchResultCols[j].firstChild) {
+            searchResultCols[j].removeChild(searchResultCols[j].firstChild);
           }
         }
 
@@ -235,10 +277,9 @@ function requestGifs(queryString, stringOffset, target) {
       img.className = 'search-results__item';
       img.setAttribute('data-title', json.data[i].title);
       img.setAttribute('data-id', json.data[i].id);
-      // serchResultsContainer.append(img);
+      
       if (currentCol == searchResultCols.length) currentCol = 0;
       searchResultCols[currentCol].append(img);
-
       currentCol++;
 
     }
@@ -282,7 +323,7 @@ function showMoreGifs(event) {
   requestGifs(`&q=${searchResultHeader.textContent.slice(23)}`, stringOffset, event.target) // 'Результаты по запросу: ' - 23 символа (крайний индекс 22), с 23 идет текст запроса
 }
 
-function getSearchResultsItemMarginBottom() {
+function setSearchResultsItemMarginBottom() {
 
   let searchResultsItems = document.querySelectorAll('.search-results__item'),
       widthOfCol = serchResultsContainer.offsetWidth * 0.192; // 19.2% ширина колонки
@@ -313,7 +354,7 @@ function getSearchResultsItemMarginBottom() {
 
 searchForm.addEventListener('submit', showSearchResults);
 showMoreBtn.addEventListener('click', showMoreGifs);
-window.addEventListener('resize', getSearchResultsItemMarginBottom);
+window.addEventListener('resize', setSearchResultsItemMarginBottom);
 
 // ___________________________Прикрепление формы поиска к верху окна__________________________
 
@@ -348,6 +389,7 @@ window.addEventListener('scroll', () => {
   } else {
     
     searchDiv.classList.remove('topWindow');
+    searchDiv.style.width = '100%';
 
   }
 });
