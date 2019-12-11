@@ -13,21 +13,35 @@ function getColIndex(cols) {
 }
         
 function insertImages(cols, img) {
-  if (currentCol == cols.length) currentCol = 0;
   
   if (getComputedStyle(cols[currentCol]).display != 'none') {
     cols[currentCol].append(img);
   } else {
     index--;
   }
-  currentCol++;
+}
+
+function setBlockHeight(cols, gifMarginBottom) {
+  let blockHeight = 0;
+
+  for (let i = 0; i < cols.length; i++) {
+    if (getComputedStyle(cols[i]).display != 'none') {
+      let gifsHeightSum = 0;
+      let widthOfCol = cols[i].offsetWidth;
+      for (let j = 0; j < cols[i].children.length; j++) {
+        gifsHeightSum += widthOfCol / cols[i].children[j].getAttribute('data-coef');
+        if (j != cols[i].children.length - 1) gifsHeightSum += gifMarginBottom;
+      }
+      if (gifsHeightSum > blockHeight) blockHeight = gifsHeightSum;
+    }
+  }
+  
+  return blockHeight;
 }
 // ___________________________Карусель с трендовыми gif__________________________
 (() => {
   let trendLength = 20;
   let trendGiphyAPI = `https://api.giphy.com/v1/gifs/trending?api_key=${apiKey}&limit=${trendLength}`;
-  // let trendGiphyAPI = `https://api.giphy.com/v1/gifs/MZoBUfHfHcMz6D6t3n?api_key=${apiKey}`;
-
 
   let trendSlidesContainer = document.querySelector('.trending__slides');
   let forwardBtn = document.querySelector('.trending__btn--forward'),
@@ -76,7 +90,6 @@ function insertImages(cols, img) {
           insertImages(trendingCols, img);
         } else {
           trendSlidesContainer.append(img);
-          let coef = json.data[index].images.original.width/json.data[index].images.original.height;
           trendSlidesWidths.push(coef);
         }
 
@@ -210,12 +223,12 @@ function insertImages(cols, img) {
 
       if (getComputedStyle(trendingCols[2]).display == 'none') { // ширина экрана <= 480px
         for (let i = 0; i < trends.length; i++) {
-          trendItemMarginBottom = trendSlidesContainer.offsetWidth * 0.005;
+          trendItemMarginBottom = trendSlidesContainer.offsetWidth * 0.01;
           trends[i].style.marginBottom = trendItemMarginBottom  + 'px';
         }
       } else {
         for (let i = 0; i < trends.length; i++) {
-          trendItemMarginBottom = (trendSlidesContainer.offsetWidth * 0.025)/2;
+          trendItemMarginBottom = trendSlidesContainer.offsetWidth * 0.005;
           trends[i].style.marginBottom = trendItemMarginBottom  + 'px';
         }
       }
@@ -231,23 +244,11 @@ function insertImages(cols, img) {
         trendingHeader.textContent = 'Скрыть трендовые Gif';
       }
 
-      function handleTrendingHeaderClick() {
-        let heightForTrendSlidesContainer = 0;
-        
+      function handleClickAtTrendingHeader() {
+
         if (getComputedStyle(trendSlidesContainer).height == '0px') {
 
-          for (let i = 0; i < trendingCols.length; i++) {
-            if (getComputedStyle(trendingCols[i]).display != 'none') {
-              let gifsHeightSum = 0;
-              let widthOfCol = trendingCols[i].offsetWidth;
-              for (let j = 0; j < trendingCols[i].children.length; j++) {
-                gifsHeightSum += widthOfCol / trendingCols[i].children[j].getAttribute('data-coef');
-                if (j != trendingCols[i].children.length - 1) gifsHeightSum += trendItemMarginBottom;
-              }
-              if (gifsHeightSum > heightForTrendSlidesContainer) heightForTrendSlidesContainer = gifsHeightSum;
-            }
-          }
-          trendSlidesContainer.style.height = heightForTrendSlidesContainer + 'px';
+          trendSlidesContainer.style.height = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
           trendingHeader.textContent = 'Скрыть трендовые Gif';
         } else {
           trendSlidesContainer.style.height = '0px';
@@ -255,9 +256,9 @@ function insertImages(cols, img) {
         }
       }
       
-      trendingHeader.addEventListener('click', handleTrendingHeaderClick);
+      trendingHeader.addEventListener('click', handleClickAtTrendingHeader);
     } else {
-      trendingHeader.removeEventListener('click', handleTrendingHeaderClick);
+      trendingHeader.removeEventListener('click', handleClickAtTrendingHeader);
       trendingHeader.textContent = 'Трендовые Gif';
     }
   }
@@ -276,6 +277,7 @@ function insertImages(cols, img) {
 
   let queryString;
   let requestString;
+  let coef;
 
   let searchGiphyAPI = `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&limit=${searchLimit}`;
 
@@ -283,14 +285,14 @@ function insertImages(cols, img) {
       searchResultHeader = document.querySelector('.search-results__header'),
       serchResultsContainer = document.querySelector('.search-results__container'),
       showMoreBtn = document.querySelector('.search-results__show-more'),
-      searchResultCols = document.querySelectorAll('.search-results__col'),
-      searchResultCol1 = document.querySelector('.search-results__col--1'),
-      searchResultCol2 = document.querySelector('.search-results__col--2'),
-      searchResultCol3 = document.querySelector('.search-results__col--3'),
-      searchResultCol4 = document.querySelector('.search-results__col--4'),
-      searchResultCol5 = document.querySelector('.search-results__col--5');
+      searchResultCols,
+      searchResultsItemMarginBottom;
 
-  let currentColSearch = 0;
+  function getSearchResultCols() {
+    searchResultCols = document.querySelectorAll('.search-results__col');
+  }
+
+  getSearchResultCols();
 
   function showSearchResults(event) {
     event.preventDefault();
@@ -302,15 +304,14 @@ function insertImages(cols, img) {
     }
 
     requestString = searchField.value;
-
     queryString = `&q=${requestString}`;
     requestGifs(queryString, '', event.target);
+    serchResultsContainer.style.borderBottom = '1px solid #fff';
 
   }
 
   function requestGifs(queryString, stringOffset, target) {
-    let i = 0,
-        currentCol = 0;
+    let i = 0;
 
     fetch(searchGiphyAPI + queryString + stringOffset)
     .then(response => response.json())
@@ -336,12 +337,15 @@ function insertImages(cols, img) {
         img.className = 'search-results__item';
         img.setAttribute('data-title', json.data[i].title);
         img.setAttribute('data-id', json.data[i].id);
+        coef = json.data[i].images.original.width/json.data[i].images.original.height;
+        img.setAttribute('data-coef', coef);
 
-        if (currentCol == searchResultCols.length) currentCol = 0;
-        searchResultCols[currentCol].append(img);
-        currentCol++;
+        currentCol = getColIndex(searchResultCols);
+        insertImages(searchResultCols, img);
 
       }
+      setSearchResultsItemMarginBottom();
+      serchResultsContainer.style.height = setBlockHeight(searchResultCols, searchResultsItemMarginBottom) + 'px';
 
       if (target == searchForm) {
         showSerchResultsContainerElements(true);
@@ -371,7 +375,14 @@ function insertImages(cols, img) {
 
     searchResultHeader.style.display = 'block';
     searchResultHeader.textContent = 'Результаты по запросу: ' + requestString;
+    jumpToSearchResults();
     searchField.value = '';
+  }
+
+  function jumpToSearchResults() {
+    let trendingSlider = document.querySelector('.trending__slider');
+    trendingSliderBottom = trendingSlider.getBoundingClientRect().bottom;
+    window.scrollBy(0, trendingSliderBottom - parseFloat(getComputedStyle(document.querySelector('.search')).height));
   }
 
   function showMoreGifs(event) {
@@ -383,36 +394,44 @@ function insertImages(cols, img) {
   }
 
   function setSearchResultsItemMarginBottom() {
+    let searchResultsItems = document.querySelectorAll('.search-results__item');
 
-    let searchResultsItems = document.querySelectorAll('.search-results__item'),
-        widthOfCol = serchResultsContainer.offsetWidth * 0.192; // 19.2% ширина колонки
+    if (searchResultsItems.length == 0) return;
 
-    if (searchResultsItems.length != 0) {
-
-      if (serchResultsContainer.offsetWidth < 1000) {
-        let mb = (serchResultsContainer.offsetWidth - widthOfCol * 5)/4 + 'px'; // 5 - кол-во колонок, 4 - кол-во промежутков между колонками.
-
-        for (let i = 0; i < searchResultsItems.length; i++) {
-          searchResultsItems[i].style.marginBottom = mb;
-        }      
-      } else {
-
-        if (getComputedStyle(searchResultsItems[0]).marginBottom != '0.625em') {
-
-          for (let i = 0; i < searchResultsItems.length; i++) {
-            searchResultsItems[i].style.marginBottom = '0.625em';
-          }
-
-        }
-
+    let mb;
+    let numOfCols = 0;
+    for (let i = 0; i < searchResultCols.length; i++) {
+      if (getComputedStyle(searchResultCols[i]).display != 'none') {
+        numOfCols++;
       }
+    }
 
+    switch(numOfCols) {
+      case 5:
+        mb = serchResultsContainer.offsetWidth  * 0.00625;// 0.00625 = (offsetWidth - 19.5% * 5)/4 - отношение ширины 
+        //пространства между колонками к общей ширине контейнера их содержащего
+        break;
+      case 4: 
+        mb = serchResultsContainer.offsetWidth  * 0.006666;
+        break;
+      case 3:
+        mb = serchResultsContainer.offsetWidth  * 0.005;
+        break;
+      case 2:
+        mb = serchResultsContainer.offsetWidth  * 0.01;
+    }
+
+    searchResultsItemMarginBottom = mb;
+    for (let i = 0; i < searchResultsItems.length; i++) {
+      searchResultsItems[i].style.marginBottom = mb + 'px';
     }
 
   }
 
   searchForm.addEventListener('submit', showSearchResults);
   showMoreBtn.addEventListener('click', showMoreGifs);
+  window.addEventListener('resize', setSearchResultsItemMarginBottom);
+  window.addEventListener('resize', getSearchResultCols);
   window.addEventListener('resize', setSearchResultsItemMarginBottom);
 })();
 
