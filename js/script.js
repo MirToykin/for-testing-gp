@@ -292,23 +292,41 @@ function setBlockHeight(cols, gifMarginBottom) {
       
       
     } else if (getComputedStyle(trendingCols[2]).display == 'block' && !trendingCols[2].hasChildNodes()) { //кол-во столбцов увеличилось
-      let numOfImgsForReplace = Math.floor(trendLength / 3); // 3 - кол-во столбцов после увеличения
+      let numOfImgsToReplace = Math.floor(trendLength / 3); // 3 - кол-во столбцов после увеличения
 
-      if (numOfImgsForReplace % 2 == 0) {
-        let col_0LastIndex = trendingCols[0].children.length - 1;
-        let col_0NewLastIndex = trendingCols[0].children.length - 1 - numOfImgsForReplace / 2;
+      let interval = setInterval(() => {
+        if (trendingCols[2].children.length == numOfImgsToReplace) {
+          clearInterval(interval);
+          return;
+        }
+
+        let col_0LastIndex = trendingCols[0].children.length - 1;;
+        let col_0NewLastIndex;
+        let col_1LastIndex = trendingCols[1].children.length - 1;
+        let col_1NewLastIndex;
+
+        if (numOfImgsToReplace % 2 == 0) {
+
+          col_0NewLastIndex = trendingCols[0].children.length - 1 - numOfImgsToReplace / 2;
+          col_1NewLastIndex = trendingCols[1].children.length - 1 - numOfImgsToReplace / 2;
+
+        } else {
+
+          col_0NewLastIndex = trendingCols[0].children.length - 1 - Math.ceil(numOfImgsToReplace / 2);
+          col_1NewLastIndex = trendingCols[1].children.length - 1 - Math.floor(numOfImgsToReplace / 2);
+
+        }
+
         for (let i = col_0LastIndex; i >  col_0NewLastIndex; i--) {
           trendingCols[2].append(trendingCols[0].children[i]);
         }
 
-        let col_1LastIndex = trendingCols[1].children.length - 1;
-        let col_1NewLastIndex = trendingCols[1].children.length - 1 - numOfImgsForReplace / 2;
         for (let i = col_1LastIndex; i >  col_1NewLastIndex; i--) {
           trendingCols[2].append(trendingCols[1].children[i]);
         }
 
         trendSlidesContainer.style.height = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
-      }
+      }, 1)
     }
   }
   
