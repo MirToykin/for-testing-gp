@@ -274,18 +274,23 @@ function setBlockHeight(cols, gifMarginBottom) {
   // numOfTrendingCols = getVisibleColsNum(trendingCols);
 
   function resizeReplaceTrends() {
+
     if (document.documentElement.clientWidth > 767) return;
 
-    let imgsForReplace;
-
     if (getComputedStyle(trendingCols[2]).display == 'none' && trendingCols[2].hasChildNodes()) { // кол-во столбцов уменьшилось
-      imgsForReplace = trendingCols[2].children;
+      let interval = setInterval(() => {
+        if (!trendingCols[2].hasChildNodes()) clearInterval(interval);
+
+        let imgsForReplace = trendingCols[2].children;
+    
+        for (let i = 0; i < imgsForReplace.length; i++) {
+          currentCol = getColIndex(trendingCols);
+          insertImages(trendingCols, imgsForReplace[i]);
+          trendSlidesContainer.style.height = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
+        }
+      }, 1)
       
-      for (let i = 0; i < imgsForReplace.length; i++) {
-        currentCol = getColIndex(trendingCols);
-        insertImages(trendingCols, imgsForReplace[i]);
-        trendSlidesContainer.style.height = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
-      }
+      
     } else if (getComputedStyle(trendingCols[2]).display == 'block' && !trendingCols[2].hasChildNodes()) { //кол-во столбцов увеличилось
       let numOfImgsForReplace = Math.floor(trendLength / 3); // 3 - кол-во столбцов после увеличения
 
