@@ -36,16 +36,6 @@ function setBlockHeight(cols, gifMarginBottom) {
   return blockHeight;
 }
 
-// function getVisibleColsNum(cols) {
-//   let colsNum = 0;
-
-//   for (let i = 0; i < cols.length; i++) {
-//     if (getComputedStyle(cols[i]).display == 'block') colsNum++;
-//   }
-
-//   return colsNum;
-// }
-
 // ___________________________Карусель с трендовыми gif__________________________
 (() => {
   let trendLength = 20;
@@ -57,7 +47,7 @@ function setBlockHeight(cols, gifMarginBottom) {
       backBtn = document.querySelector('.trending__btn--back');
   let trendingHeader = document.querySelector('.trending__header');
 
-  let trendSliderWidth = document.querySelector('.trending__slider-window').offsetWidth;;
+  let trendSliderWidth = document.querySelector('.trending__slider-window').offsetWidth;
   let visibleSliderWidth = trendSliderWidth;
 
   let trendSlidesWidths = [];  // в каждом элементе массива 
@@ -73,7 +63,6 @@ function setBlockHeight(cols, gifMarginBottom) {
 
   let trendIndex = 0;
   let trendingCols = document.querySelectorAll('.trending__col');
-  // let numOfTrendingCols;
   let trendItemMarginBottom;
   let coef;
 
@@ -100,14 +89,12 @@ function setBlockHeight(cols, gifMarginBottom) {
           insertImages(trendingCols, img);
         } else {
           trendSlidesContainer.append(img);
-          trendSlidesWidths.push(coef);
         }
 
+        trendSlidesWidths.push(coef * slideHeight + slideMarginRight);
       }
 
       setTrendingMobileMarginBottom();
-
-      trendSlidesWidths = trendSlidesWidths.map((item => item * slideHeight + slideMarginRight));
 
       allSlidesWidth = trendSlidesWidths.reduce((sum, current) => sum + current, 0);
 
@@ -246,24 +233,11 @@ function setBlockHeight(cols, gifMarginBottom) {
   }
   
   function setTrendingHeader() {
-    if (document.documentElement.clientWidth <= 768) {
+    if (document.documentElement.clientWidth <= 767) {
       if (getComputedStyle(trendSlidesContainer).height == '0px') {
         trendingHeader.textContent = 'Показать трендовые Gif';
       } else {
         trendingHeader.textContent = 'Скрыть трендовые Gif';
-      }
-
-      function handleClickAtTrendingHeader() {
-
-        if (getComputedStyle(trendSlidesContainer).height == '0px') {
-
-          trendSlidesContainerHeight = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
-          trendSlidesContainer.style.height = trendSlidesContainerHeight;
-          trendingHeader.textContent = 'Скрыть трендовые Gif';
-        } else {
-          trendSlidesContainer.style.height = '0px';
-          trendingHeader.textContent = 'Показать трендовые Gif';
-        }
       }
       
       trendingHeader.addEventListener('click', handleClickAtTrendingHeader);
@@ -272,74 +246,122 @@ function setBlockHeight(cols, gifMarginBottom) {
       trendingHeader.textContent = 'Трендовые Gif';
     }
   }
-  // numOfTrendingCols = getVisibleColsNum(trendingCols);
+
+  function handleClickAtTrendingHeader() {
+
+    if (getComputedStyle(trendSlidesContainer).height == '0px') {
+
+      trendSlidesContainerHeight = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
+      trendSlidesContainer.style.height = trendSlidesContainerHeight;
+      trendingHeader.textContent = 'Скрыть трендовые Gif';
+    } else {
+      trendSlidesContainer.style.height = '0px';
+      trendingHeader.textContent = 'Показать трендовые Gif';
+    }
+  }
 
   function resizeReplaceTrends() {
 
-    if (document.documentElement.clientWidth > 767) return;
+    if (document.documentElement.clientWidth > 767) {
+      trendSliderWidth = document.querySelector('.trending__slider-window').offsetWidth;
+      visibleSliderWidth = trendSliderWidth;
 
-    if (getComputedStyle(trendingCols[2]).display == 'none' && trendingCols[2].hasChildNodes()) { // кол-во столбцов уменьшилось
-      let interval = setInterval(() => {
-        if (!trendingCols[2].hasChildNodes()) {
-          clearInterval(interval);
-          return;
-        }
+      if (trendingCols[0].hasChildNodes() || trendingCols[1].hasChildNodes() || trendingCols[2].hasChildNodes()) { // переход с моб. версии на полноэкр.
+        trendSlidesContainer.style.height = 'auto';
 
-        let imgsForReplace = trendingCols[2].children;
-    
-        for (let i = 0; i < imgsForReplace.length; i++) {
+        let interval = setInterval(() => {
+          trendSlidesWidths = []; // нужно заново заполнять массив ширин, т.к. после моб. вер. меняется порядок трендовых гиф.
 
-          currentCol = getColIndex(trendingCols);
-          insertImages(trendingCols, imgsForReplace[i]);
-          trendSlidesContainerHeight = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
-
-          if (getComputedStyle(trendSlidesContainer).height != '0px') {
-            trendSlidesContainer.style.height = trendSlidesContainerHeight;
+          for (let i = 0; i < trendingCols.length; i++) {
+            for (let j = 0; j < trendingCols[i].children.length; ) { // j не наращивается, т.к. длина коллекции постоянно убывает
+              let trendImg = trendingCols[i].children[j];
+              trendSlidesContainer.append(trendImg);
+              trendSlidesWidths.push(trendImg.getAttribute('data-coef') * slideHeight + slideMarginRight);
+            }
           }
 
+          if (trendSlidesContainer.children.length == trendLength + 3) {
+            clearInterval(interval); // + 3 т.к. детьми 
+            // данного элемента помимо трендовых гиф являются еще 3 колонки, используемые в моб. версии
+            return;
+          } 
+        }, 0);
+      } else {
+        return;
+      }
+    } else {
+      if (trendSlidesContainer.children.length == 3) { // ресайз в пределах моб. версии
+        if (getComputedStyle(trendingCols[2]).display == 'none' && trendingCols[2].hasChildNodes()) { // кол-во столбцов уменьшилось
+          let interval = setInterval(() => {
+            if (!trendingCols[2].hasChildNodes()) {
+              clearInterval(interval);
+              return;
+            }
+    
+            let imgsForReplace = trendingCols[2].children;
+        
+            for (let i = 0; i < imgsForReplace.length; i++) {
+    
+              currentCol = getColIndex(trendingCols);
+              insertImages(trendingCols, imgsForReplace[i]);
+              trendSlidesContainerHeight = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
+    
+              if (getComputedStyle(trendSlidesContainer).height != '0px') {
+                trendSlidesContainer.style.height = trendSlidesContainerHeight;
+              }
+    
+            }
+          }, 0)
+    
+        } else if (getComputedStyle(trendingCols[2]).display == 'block' && !trendingCols[2].hasChildNodes()) { //кол-во столбцов увеличилось
+          let numOfImgsToReplace = Math.floor(trendLength / 3); // 3 - кол-во столбцов после увеличения
+    
+          let interval = setInterval(() => {
+            if (trendingCols[2].children.length == numOfImgsToReplace) {
+              clearInterval(interval);
+              return;
+            }
+    
+            let col_0LastIndex = trendingCols[0].children.length - 1;
+            let col_0NewLastIndex;
+            let col_1LastIndex = trendingCols[1].children.length - 1;
+            let col_1NewLastIndex;
+    
+            if (numOfImgsToReplace % 2 == 0) {
+    
+              col_0NewLastIndex = trendingCols[0].children.length - 1 - numOfImgsToReplace / 2;
+              col_1NewLastIndex = trendingCols[1].children.length - 1 - numOfImgsToReplace / 2;
+    
+            } else {
+    
+              col_0NewLastIndex = trendingCols[0].children.length - 1 - Math.ceil(numOfImgsToReplace / 2);
+              col_1NewLastIndex = trendingCols[1].children.length - 1 - Math.floor(numOfImgsToReplace / 2);
+    
+            }
+    
+            for (let i = col_0LastIndex; i >  col_0NewLastIndex; i--) {
+              trendingCols[2].append(trendingCols[0].children[i]);
+            }
+    
+            for (let i = col_1LastIndex; i >  col_1NewLastIndex; i--) {
+              trendingCols[2].append(trendingCols[1].children[i]);
+            }
+    
+            trendSlidesContainerHeight = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
+              
+            if (getComputedStyle(trendSlidesContainer).height != '0px') {
+              trendSlidesContainer.style.height = trendSlidesContainerHeight;
+            }
+          }, 0)
         }
-      }, 1)
+      } else {
+        let trendGifs = document.querySelectorAll('.trending__slide');
 
-    } else if (getComputedStyle(trendingCols[2]).display == 'block' && !trendingCols[2].hasChildNodes()) { //кол-во столбцов увеличилось
-      let numOfImgsToReplace = Math.floor(trendLength / 3); // 3 - кол-во столбцов после увеличения
-
-      let interval = setInterval(() => {
-        if (trendingCols[2].children.length == numOfImgsToReplace) {
-          clearInterval(interval);
-          return;
+        for (let i = 0; i < trendGifs.length; i++) {
+          currentCol = getColIndex(trendingCols);
+          insertImages(trendingCols, trendGifs[i]);
         }
-
-        let col_0LastIndex = trendingCols[0].children.length - 1;;
-        let col_0NewLastIndex;
-        let col_1LastIndex = trendingCols[1].children.length - 1;
-        let col_1NewLastIndex;
-
-        if (numOfImgsToReplace % 2 == 0) {
-
-          col_0NewLastIndex = trendingCols[0].children.length - 1 - numOfImgsToReplace / 2;
-          col_1NewLastIndex = trendingCols[1].children.length - 1 - numOfImgsToReplace / 2;
-
-        } else {
-
-          col_0NewLastIndex = trendingCols[0].children.length - 1 - Math.ceil(numOfImgsToReplace / 2);
-          col_1NewLastIndex = trendingCols[1].children.length - 1 - Math.floor(numOfImgsToReplace / 2);
-
-        }
-
-        for (let i = col_0LastIndex; i >  col_0NewLastIndex; i--) {
-          trendingCols[2].append(trendingCols[0].children[i]);
-        }
-
-        for (let i = col_1LastIndex; i >  col_1NewLastIndex; i--) {
-          trendingCols[2].append(trendingCols[1].children[i]);
-        }
-
-        trendSlidesContainerHeight = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
-          
-        if (getComputedStyle(trendSlidesContainer).height != '0px') {
-          trendSlidesContainer.style.height = trendSlidesContainerHeight;
-        }
-      }, 1)
+      }
     }
   }
   
@@ -349,7 +371,7 @@ function setBlockHeight(cols, gifMarginBottom) {
   window.addEventListener('resize', () => {
     trendSlidesContainerHeight = setBlockHeight(trendingCols, trendItemMarginBottom) + 'px';
 
-    if (getComputedStyle(trendSlidesContainer).height != '0px') {
+    if (getComputedStyle(trendSlidesContainer).height != '0px' && trendSlidesContainer.children.length == 3) { // 3 - кол-во столбцов в моб. версии
       trendSlidesContainer.style.height = trendSlidesContainerHeight;
     }
   });
@@ -373,15 +395,9 @@ function setBlockHeight(cols, gifMarginBottom) {
       searchResultHeader = document.querySelector('.search-results__header'),
       serchResultsContainer = document.querySelector('.search-results__container'),
       showMoreBtn = document.querySelector('.search-results__show-more'),
-      searchResultCols,
-      // numOfSearchResultCols,
+      searchResultCols = document.querySelectorAll('.search-results__col'),
+      numOfVisibleCols = getNumOfVisibleCols(),
       searchResultsItemMarginBottom;
-
-  function getSearchResultCols() {
-    searchResultCols = document.querySelectorAll('.search-results__col');
-  }
-
-  getSearchResultCols();
 
   function showSearchResults(event) {
     event.preventDefault();
@@ -399,6 +415,14 @@ function setBlockHeight(cols, gifMarginBottom) {
 
   }
 
+  function clearCols(cols) {
+    for (let j = 0; j < cols.length; j++) {
+      while (cols[j].firstChild) {
+        cols[j].removeChild(cols[j].firstChild);
+      }
+    }
+  }
+
   function requestGifs(queryString, stringOffset, target) {
     let i = 0;
 
@@ -412,11 +436,12 @@ function setBlockHeight(cols, gifMarginBottom) {
 
         if (i == 0 && stringOffset == '') {
 
-          for (let j = 0; j < searchResultCols.length; j++) {
-            while (searchResultCols[j].firstChild) {
-              searchResultCols[j].removeChild(searchResultCols[j].firstChild);
-            }
-          }
+          // for (let j = 0; j < searchResultCols.length; j++) {
+          //   while (searchResultCols[j].firstChild) {
+          //     searchResultCols[j].removeChild(searchResultCols[j].firstChild);
+          //   }
+          // }
+          clearCols(searchResultCols);
 
           searchResultHeader.style.display = 'none';
           showMoreBtn.style.display = 'none';
@@ -434,7 +459,8 @@ function setBlockHeight(cols, gifMarginBottom) {
 
       }
       setSearchResultsItemMarginBottom();
-      serchResultsContainer.style.height = setBlockHeight(searchResultCols, searchResultsItemMarginBottom) + 'px';
+      // serchResultsContainer.style.height = setBlockHeight(searchResultCols, searchResultsItemMarginBottom) + 'px';
+      // не помню для чего нужно, не удалять пока наверняка не буду уверен, что это не нужно
 
       if (target == searchForm) {
         showSerchResultsContainerElements(true);
@@ -482,18 +508,25 @@ function setBlockHeight(cols, gifMarginBottom) {
     requestGifs(`&q=${searchResultHeader.textContent.slice(23)}`, stringOffset, event.target) // 'Результаты по запросу: ' - 23 символа (крайний индекс 22), с 23 идет текст запроса
   }
 
+  function getNumOfVisibleCols() {
+    let numOfCols = 0;
+
+    for (let i = 0; i < searchResultCols.length; i++) {
+      if (getComputedStyle(searchResultCols[i]).display != 'none') {
+        numOfCols++;
+      }
+    }
+
+    return numOfCols;
+  }
+
   function setSearchResultsItemMarginBottom() {
     let searchResultsItems = document.querySelectorAll('.search-results__item');
 
     if (searchResultsItems.length == 0) return;
 
     let mb;
-    let numOfCols = 0;
-    for (let i = 0; i < searchResultCols.length; i++) {
-      if (getComputedStyle(searchResultCols[i]).display != 'none') {
-        numOfCols++;
-      }
-    }
+    let numOfCols = getNumOfVisibleCols();
 
     switch(numOfCols) {
       case 5:
@@ -514,16 +547,32 @@ function setBlockHeight(cols, gifMarginBottom) {
     for (let i = 0; i < searchResultsItems.length; i++) {
       searchResultsItems[i].style.marginBottom = mb + 'px';
     }
-
   }
-  
-  // numOfSearchResultCols = getVisibleColsNum(searchResultCols);
+
+  function resizeReplaceSearchResults() {
+    let numOfCols = getNumOfVisibleCols();
+
+    if (numOfCols == numOfVisibleCols) {
+      return;
+    } else {
+      numOfVisibleCols = numOfCols;
+
+      let searchResults = document.querySelectorAll('.search-results__item');
+
+      clearCols(searchResultCols);
+
+      for (let i = 0; i < searchResults.length; i++) {
+        currentCol = getColIndex(searchResultCols);
+        insertImages(searchResultCols, searchResults[i]);
+      }
+    }
+  }
 
   searchForm.addEventListener('submit', showSearchResults);
   showMoreBtn.addEventListener('click', showMoreGifs);
   window.addEventListener('resize', setSearchResultsItemMarginBottom);
-  window.addEventListener('resize', getSearchResultCols);
-  window.addEventListener('resize', setSearchResultsItemMarginBottom);
+  window.addEventListener('resize', resizeReplaceSearchResults)
+
 })();
 
 // ___________________________Прикрепление формы поиска к верху окна__________________________
